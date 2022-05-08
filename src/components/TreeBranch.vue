@@ -33,13 +33,13 @@ function initTree(): IBranch[] {
     const position = positionShuffle.shift()!
     if (position === 'top' || position === 'bottom') {
       tree.start.x = Math.random() * WIDTH
-      tree.length = HEIGHT / 50
+      tree.length = HEIGHT / 100
       tree.start.y = position === 'top' ? 0 : HEIGHT
       tree.angle = position === 'top' ? Math.PI / 4 + Math.random() * Math.PI / 2 : -Math.PI / 4 - Math.random() * Math.PI / 2
     }
     else {
       tree.start.y = Math.random() * WIDTH
-      tree.length = WIDTH / 50
+      tree.length = WIDTH / 100
       tree.start.x = position === 'left' ? 0 : HEIGHT
       tree.angle = position === 'left' ? Math.PI / 4 - Math.random() * Math.PI / 2 : Math.PI * 3 / 4 + Math.random() * Math.PI / 2
     }
@@ -65,7 +65,7 @@ function sprout(b: IBranch, depth = 0) {
   const end = getEndPoint(b)
   drawBranch(b)
 
-  if (depth < 5 || Math.random() < 0.4) {
+  if (depth < 6 || Math.random() < 0.4) {
     pendingTask.push(() => {
       sprout({
         start: end,
@@ -75,7 +75,7 @@ function sprout(b: IBranch, depth = 0) {
     })
   }
 
-  if (depth < 5 || Math.random() < 0.4) {
+  if (depth < 6 || Math.random() < 0.4) {
     pendingTask.push(() => {
       sprout({
         start: end,
@@ -143,5 +143,6 @@ canvas {
   position: fixed;
   top: 0;
   left: 0;
+  z-index: -1;
 }
 </style>

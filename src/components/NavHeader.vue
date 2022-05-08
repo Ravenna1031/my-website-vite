@@ -32,7 +32,8 @@ const nav: INav[] = [
 <template>
   <nav class="navbar justify-content-end px-4">
     <ul class="list-inline mb-0">
-      <li v-for="item in nav" :key="item.title" class="list-inline-item px-1">
+      <li v-for="item in nav" :key="item.title" class="list-inline-item px-1"
+        :class="$route.name === item.name ? 'active' : null">
         <router-link v-if="item.type === 'text'" :to="{ name: item.name }">
           {{ item.title }}
         </router-link>
@@ -46,9 +47,21 @@ const nav: INav[] = [
 
 <style>
 .list-inline-item>a {
-  text-decoration: none;
+  padding-right: 0;
+  padding-left: 0;
   font-size: 20px;
   font-weight: 700;
-  color: black;
+  text-decoration: none;
+  color: rgba(8, 8, 8, 0.4);
+}
+
+.list-inline-item>a:hover {
+  color: #080808;
+}
+
+.list-inline-item.active>a,
+.list-inline-item.active>a:hover,
+.list-inline-item.active>a:focus {
+  color: #080808;
 }
 </style>
