@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import ImageModal from '../components/ImageModal.vue'
 
 interface IImage {
   name: string
@@ -7,16 +9,6 @@ interface IImage {
 }
 
 const gallery: IImage[] = [
-  {
-    name: 'Church',
-    source: '/src/assets/Church.png',
-    type: 'AI Art',
-  },
-  {
-    name: 'SHattering',
-    source: '/src/assets/SHattering.png',
-    type: 'Photography & AI Art',
-  },
   {
     name: 'Vessel',
     source: '/src/assets/Vessel.png',
@@ -27,14 +19,33 @@ const gallery: IImage[] = [
     source: '/src/assets/Cube.png',
     type: 'AI Art',
   },
+
+  {
+    name: 'Church',
+    source: '/src/assets/Church.png',
+    type: 'AI Art',
+  },
 ]
+
+const modalIsOpen = ref(false)
+const shownImage = ref({})
+const openModal = (image: IImage) => {
+  shownImage.value = image
+  modalIsOpen.value = true
+}
+const closeModal = () => {
+  modalIsOpen.value = false
+}
 </script>
 
 <template>
-  <div class="grid">
-    <div v-for="image in gallery" :key="image.name" class="grid-item">
-      <img :src="image.source">
+  <div>
+    <div class="grid">
+      <div v-for="image in gallery" :key="image.name" class="grid-item">
+        <img :src="image.source" @click="openModal(image)">
+      </div>
     </div>
+    <ImageModal :is-open="modalIsOpen" :image="shownImage" @close-modal="closeModal" />
   </div>
 </template>
 

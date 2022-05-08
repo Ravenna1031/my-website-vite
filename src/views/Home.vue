@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div class="header">
-      <h2>
+      <h2 style="font-weight: bolder;">
         Ray Gu
       </h2>
     </div>
