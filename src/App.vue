@@ -15,17 +15,20 @@ import TreeBranch from './components/TreeBranch.vue'
 </template>
 
 <style>
+@import './assets/font/font.css';
+
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  /* font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  -moz-osx-font-smoothing: grayscale; */
+  font-family: manrope;
   text-align: center;
-  color: #2c3e50;
   margin-top: 60px;
 }
 
 body {
-  background-color: #BDC0BA;
+  background-color: rgba(102, 103, 171, 0.7);
+  opacity: 1;
 }
 
 .container {

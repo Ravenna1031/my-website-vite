@@ -11,18 +11,18 @@ interface IImage {
 const gallery: IImage[] = [
   {
     name: 'Vessel',
-    source: '/src/assets/Vessel.png',
+    source: '/src/assets/image/gallery/Vessel.png',
     type: 'AI Art',
   },
   {
     name: 'Cube',
-    source: '/src/assets/Cube.png',
+    source: '/src/assets/image/gallery/Cube.png',
     type: 'AI Art',
   },
 
   {
     name: 'Church',
-    source: '/src/assets/Church.png',
+    source: '/src/assets/image/gallery/Church.png',
     type: 'AI Art',
   },
 ]
@@ -39,7 +39,7 @@ const closeModal = () => {
 </script>
 
 <template>
-  <div>
+  <div class="container">
     <div class="grid">
       <div v-for="image in gallery" :key="image.name" class="grid-item">
         <img :src="image.source" @click="openModal(image)">

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import githubIcon from '../assets/Github.svg'
+import githubIcon from '../assets/image/icon/Github.svg'
 
 interface INav {
   type: 'text' | 'icon'
@@ -19,6 +19,11 @@ const nav: INav[] = [
     type: 'text',
     name: 'gallery',
     title: 'Gallery',
+  },
+  {
+    type: 'text',
+    name: 'projects',
+    title: 'Projects',
   },
   {
     type: 'icon',
@@ -50,7 +55,7 @@ const nav: INav[] = [
   padding-right: 0;
   padding-left: 0;
   font-size: 20px;
-  font-weight: 700;
+  font-weight: bold;
   text-decoration: none;
   color: rgba(8, 8, 8, 0.4);
 }
