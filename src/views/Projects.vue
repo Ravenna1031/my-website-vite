@@ -1,15 +1,21 @@
 <script setup lang="ts">
-interface IProject {
-  index: string
-  name: string
-}
+import { projectsList } from '../constant'
+// interface IProject {
+//   index: string
+//   name: string
+// }
 
-const projectsList: IProject[] = [
-  {
-    index: '01',
-    name: 'Stinky Clock',
-  },
-]
+// const projectsList: IProject[] = [
+//   {
+//     index: '01',
+//     name: 'Stinky Clock',
+//   },
+// ]
+
+// const projectsList: string[] = [
+//   'Stinky Clock',
+// ]
+
 </script>
 
 <template>
@@ -18,10 +24,10 @@ const projectsList: IProject[] = [
       <div id="project-title">
         <h5>Meaningless Projects</h5>
       </div>
-      <router-link v-for="project in projectsList" id="project-container" :key="project.index"
-        :to="{ path: '/projects/' + project.index }" class="col-xs-12 col-sm-10 col-md-6 col-lg-4">
+      <router-link v-for="project, index in projectsList" id="project-container" :key="index"
+        :to="{ path: '/projects/' + index }" class="col-xs-12 col-sm-10 col-md-6 col-lg-4">
         <div id="project-container">
-          <span id="project-index">{{ project.index }}</span> <span id="project-name">{{ project.name }}</span>
+          <span id="project-index">{{ index }}</span> <span id="project-name">{{ project }}</span>
         </div>
       </router-link>
     </div>
@@ -43,7 +49,6 @@ const projectsList: IProject[] = [
 }
 
 #project-index {
-  /* color: rgba(96, 55, 62, 0.8); */
   color: rgba(0, 98, 132, 0.8);
 }
 

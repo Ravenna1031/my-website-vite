@@ -1,5 +1,3 @@
-import StinkyClock from './views/projects/StinkyClock.vue'
-
-export const RouterMap = {
-  '01': StinkyClock,
-}
+export const projectsList: string[] = [
+  'Stinky Clock',
+]

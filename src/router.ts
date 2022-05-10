@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from './views/Home.vue'
 import Gallery from './views/Gallery.vue'
 import Projects from './views/Projects.vue'
-import { RouterMap } from './constant'
+import projectAdmin from './views/projects/admin.vue'
 
 const routerHistory = createWebHistory()
 const router = createRouter({
@@ -25,14 +25,17 @@ const router = createRouter({
       name: 'projects',
       component: Projects,
       meta: { title: 'Projects - Ray Gu' },
-      children: [
-        {
-          path: '/projects/01',
-          component: RouterMap['01'],
-        },
-      ],
+    },
+    {
+      path: '/projects/:id',
+      component: projectAdmin,
     },
   ],
+})
+
+router.beforeEach((to) => {
+  if (typeof (to.meta.title) === 'string')
+    document.title = to.meta.title
 })
 
 export default router
