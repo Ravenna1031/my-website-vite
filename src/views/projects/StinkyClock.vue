@@ -4,24 +4,37 @@ import { ref } from 'vue'
 import eightAngry from '../../assets/image/icon/projects/StinkyClock/eight-angry.png'
 import eightJoy from '../../assets/image/icon/projects/StinkyClock/eight-joy.png'
 import eightSorrow from '../../assets/image/icon/projects/StinkyClock/eight-sorrow.png'
+import eightAudioReady from '../../assets/audio/projects/StinkyClock/eight-audio-ready.mp3'
+import eightAudioStart from '../../assets/audio/projects/StinkyClock/eight-audio-start.mp3'
+import eightAudioCancel from '../../assets/audio/projects/StinkyClock/eight-audio-cancel.mp3'
 
 interface ITheme {
   iconDefault: string
   iconStart: string
   iconFinish: string
+  audioReady: string
+  audioStart: string
+  audioCancel: string
 }
 
 const themeEight: ITheme = {
   iconDefault: eightSorrow,
   iconStart: eightAngry,
   iconFinish: eightJoy,
+  audioReady: eightAudioReady,
+  audioStart: eightAudioStart,
+  audioCancel: eightAudioCancel,
 }
 
 const status = ref<'default' | 'ready' | 'start' | 'finish'>('default')
 
+const currentTheme = themeEight
+
 function iconHover() {
-  if (status.value === 'default')
+  if (status.value === 'default') {
     status.value = 'ready'
+    new Audio(currentTheme.audioReady).play()
+  }
 }
 
 function iconUnhover() {
@@ -29,30 +42,39 @@ function iconUnhover() {
     status.value = 'default'
 }
 
-const theme = themeEight
+const theme: ITheme = themeEight
 
-const timerMinute = ref(25)
-const timerSecond = ref(0)
+let timerInterval: NodeJS.Timeout
+
+const timerMinute = ref<number>(25)
+const timerSecond = ref<number>(0)
+const timerMinuteDefault = ref<number>(25)
+const timerSecondDefault = ref<number>(0)
 
 function timerAdd() {
-  if (timerMinute.value < 60)
+  if (timerMinute.value < 60) {
     timerMinute.value += 5
+    timerMinuteDefault.value = timerMinute.value
+  }
 }
 
 function timerMinus() {
-  if (timerMinute.value > 10)
+  if (timerMinute.value > 10) {
     timerMinute.value -= 5
+    timerMinuteDefault.value = timerMinute.value
+  }
 }
 
 function timerStart() {
   status.value = 'start'
+  new Audio(currentTheme.audioStart).play()
   timerCountDown()
-  setInterval(timerCountDown, 1000)
+  timerInterval = setInterval(timerCountDown, 1000)
 }
 
 const timerValue = computed(() => {
-  if (timerSecond.value === 0)
-    return `${timerMinute.value}:${timerSecond.value}${timerSecond.value}`
+  if (timerSecond.value < 10)
+    return `${timerMinute.value}:0${timerSecond.value}`
   else
     return `${timerMinute.value}:${timerSecond.value}`
 })
@@ -62,6 +84,14 @@ function timerCountDown() {
   seconds -= 1
   timerMinute.value = Math.floor(seconds / 60)
   timerSecond.value = seconds % 60
+}
+
+function timerCancel() {
+  status.value = 'default'
+  clearInterval(timerInterval)
+  timerMinute.value = timerMinuteDefault.value
+  timerSecond.value = timerSecondDefault.value
+  new Audio(currentTheme.audioCancel).play()
 }
 
 </script>
@@ -84,9 +114,12 @@ function timerCountDown() {
         <span v-show="status === 'default' || status === 'ready'">▶</span>
       </button>
     </div>
-    <div class="clock-button" @mouseover="iconHover" @mouseout="iconUnhover">
-      <h1 v-show="status === 'default' || status === 'ready'" @click="timerStart">
+    <div class="clock-button">
+      <h1 v-show="status === 'default' || status === 'ready'" @mouseover="iconHover" @mouseout="iconUnhover" @click="timerStart">
         START
+      </h1>
+      <h1 v-show="status === 'start'" @click="timerCancel">
+        CANCEl
       </h1>
     </div>
   </div>
