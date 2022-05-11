@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import 'bootstrap/dist/css/bootstrap.min.css'
 import NavHeader from './components/NavHeader.vue'
-import TreeBranch from './components/TreeBranch.vue'
+// import TreeBranch from './components/TreeBranch.vue'
 </script>
 
 <template>
@@ -9,7 +9,7 @@ import TreeBranch from './components/TreeBranch.vue'
     <NavHeader />
     <div class="col-sm-10 col-md-9 col-lg-7 m-auto">
       <router-view />
-      <TreeBranch />
+      <!-- <TreeBranch /> -->
     </div>
   </div>
 </template>
@@ -18,9 +18,6 @@ import TreeBranch from './components/TreeBranch.vue'
 @import './assets/font/font.css';
 
 #app {
-  /* font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale; */
   font-family: manrope;
   text-align: center;
   margin-top: 60px;
@@ -33,6 +30,7 @@ body {
 
 .container {
   display: table;
+  margin-top: 5%;
   margin-left: auto;
   margin-right: auto;
 }

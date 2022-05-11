@@ -50,6 +50,7 @@ const closeModal = () => {
 </template>
 
 <style>
+
 .grid {
   column-count: 2;
   column-gap: 0;
