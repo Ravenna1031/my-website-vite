@@ -8,6 +8,8 @@ const props = defineProps<{
 const emit = defineEmits([
   'timer-add',
   'timer-minus',
+  // 'timer-add-break',
+  // 'timer-minus-break',
 ])
 
 function timerAdd() {

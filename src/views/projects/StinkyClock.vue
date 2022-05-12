@@ -5,9 +5,11 @@ import type { ITheme } from '../../constant'
 import eightAngry from '../../assets/image/icon/projects/StinkyClock/eight-angry.png'
 import eightJoy from '../../assets/image/icon/projects/StinkyClock/eight-joy.png'
 import eightSorrow from '../../assets/image/icon/projects/StinkyClock/eight-sorrow.png'
+import eightBreak from '../../assets/image/icon/projects/StinkyClock/eight-break.png'
 import eightAudioReady from '../../assets/audio/projects/StinkyClock/eight-audio-ready.mp3'
 import eightAudioStart from '../../assets/audio/projects/StinkyClock/eight-audio-start.mp3'
 import eightAudioCancel from '../../assets/audio/projects/StinkyClock/eight-audio-cancel.mp3'
+import eightAudioFinish from '../../assets/audio/projects/StinkyClock/eight-audio-finish.mp3'
 import ClockIcon from './components/StinkyClock/ClockIcon.vue'
 import ClockCounter from './components/StinkyClock/ClockCounter.vue'
 import ClockButton from './components/StinkyClock/ClockButton.vue'
@@ -17,12 +19,14 @@ const themeEight: ITheme = {
   iconDefault: eightSorrow,
   iconStart: eightAngry,
   iconFinish: eightJoy,
+  iconBreak: eightBreak,
   audioReady: eightAudioReady,
   audioStart: eightAudioStart,
   audioCancel: eightAudioCancel,
+  audioFinish: eightAudioFinish,
 }
 
-const status = ref<'default' | 'ready' | 'start' | 'finish'>('default')
+const status = ref<'default' | 'ready' | 'start' | 'finish' | 'break-ready' | 'break' | 'restart'>('default')
 
 const currentTheme = themeEight
 
@@ -41,12 +45,14 @@ function iconUnhover() {
 
 const theme: ITheme = themeEight
 
-let timerInterval: NodeJS.Timeout
-
-const timerMinute = ref<number>(25) // used for counter
+const timerMinute = ref<number>(1) // used for counter
 const timerSecond = ref<number>(0)
-const timerMinuteDefault = ref<number>(25) // used for calculation and default setting
+const timerMinuteDefault = ref<number>(1) // used for calculation and default setting
 const timerSecondDefault = ref<number>(0)
+const timerMinuteBreak = ref<number>(5) // break time countdown
+const timerSecondBreak = ref<number>(0)
+const timerMinuteBreakDefault = ref<number>(5)
+const timerSecondBreakDefault = ref<number>(0)
 
 const timerToday = ref<number>(0) // total focus time today
 const timerTodayLocal = localStorage.getItem('timer-today') // saved in browser storage
@@ -69,16 +75,32 @@ else {
 }
 
 function timerAdd() {
-  if (timerMinute.value < 60) {
-    timerMinute.value += 5
-    timerMinuteDefault.value = timerMinute.value
+  if (status.value === 'break') {
+    if (timerMinuteBreak.value < 30) {
+      timerMinuteBreak.value += 5
+      timerMinuteBreakDefault.value = timerMinuteBreak.value
+    }
+  }
+  else {
+    if (timerMinute.value < 60) {
+      timerMinute.value += 5
+      timerMinuteDefault.value = timerMinute.value
+    }
   }
 }
 
 function timerMinus() {
-  if (timerMinute.value > 10) {
-    timerMinute.value -= 5
-    timerMinuteDefault.value = timerMinute.value
+  if (status.value === 'break') {
+    if (timerMinuteBreak.value > 5) {
+      timerMinuteBreak.value -= 5
+      timerMinuteBreakDefault.value = timerMinuteBreak.value
+    }
+  }
+  else {
+    if (timerMinute.value > 10) {
+      timerMinute.value -= 5
+      timerMinuteDefault.value = timerMinute.value
+    }
   }
 }
 
@@ -89,6 +111,9 @@ const timerValue = computed<string>(() => {
   else
     return `${timerMinute.value}:${timerSecond.value}`
 })
+
+let timerInterval: NodeJS.Timeout
+let timerIntervalBreak: NodeJS.Timeout
 
 function timerStart() {
   // start countdown
@@ -108,6 +133,15 @@ function timerCountDown() {
   timerSecond.value = seconds % 60
 }
 
+function timerCountDownBreak() {
+  let seconds = timerMinuteBreak.value * 60 + timerSecondBreak.value
+  seconds -= 1
+  if (seconds)
+    timerFinishBreak()
+  timerMinuteBreak.value = Math.floor(seconds / 60)
+  timerSecondBreak.value = seconds % 60
+}
+
 function timerCancel() {
   status.value = 'default'
   clearInterval(timerInterval)
@@ -119,8 +153,28 @@ function timerCancel() {
 function timerFinish() {
   status.value = 'finish'
   clearInterval(timerInterval)
+  new Audio(currentTheme.audioFinish).play()
+}
+
+function timerFinishBreak() {
+  status.value = 'restart'
+  clearInterval()
+}
+
+function timerDone() {
+  status.value = 'default'
   timerMinute.value = timerMinuteDefault.value
   timerSecond.value = timerSecondDefault.value
+}
+
+function timerBreak() {
+  status.value = 'break-ready'
+}
+
+function timerBreakStart() {
+  status.value = 'break'
+  timerCountDownBreak()
+  timerIntervalBreak = setInterval(timerCountDownBreak, 100)
 }
 
 function timerTodayCalculate(): string {
@@ -139,7 +193,7 @@ function timerTodayCalculate(): string {
   <div class="container">
     <ClockIcon :status="status" :theme="theme" />
     <ClockCounter :status="status" :timer-value="timerValue" @timer-add="timerAdd" @timer-minus="timerMinus" />
-    <ClockButton :status="status" @cancel="timerCancel" @start="timerStart" @hover="iconHover" @unhover="iconUnhover" />
+    <ClockButton :status="status" @break-start="timerBreakStart" @take-break="timerBreak" @done="timerDone" @cancel="timerCancel" @start="timerStart" @hover="iconHover" @unhover="iconUnhover" />
     <ClockToday :status="status" :timer-today="timerTodayCalculate()" />
   </div>
 </template>

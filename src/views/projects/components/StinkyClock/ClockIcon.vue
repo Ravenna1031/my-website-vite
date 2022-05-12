@@ -14,6 +14,8 @@ const props = defineProps<{
     <img v-show="props.status === 'ready'" :src="theme.iconStart">
     <img v-show="props.status === 'start'" class="rotate" :src="theme.iconStart">
     <img v-show="props.status === 'finish'" :src="theme.iconFinish">
+    <img v-show="props.status === 'break-ready'" :src="theme.iconBreak">
+    <img v-show="props.status === 'break'" :src="theme.iconBreak">
   </div>
 </template>
 

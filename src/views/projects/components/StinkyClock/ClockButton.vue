@@ -8,6 +8,9 @@ const emit = defineEmits([
   'unhover',
   'start',
   'cancel',
+  'done',
+  'takeBreak',
+  'breakStart',
 ])
 
 function hover() {
@@ -26,6 +29,17 @@ function cancel() {
   emit('cancel')
 }
 
+function done() {
+  emit('done')
+}
+
+function takeBreak() {
+  emit('takeBreak')
+}
+
+function breakStart() {
+  emit('breakStart')
+}
 </script>
 
 <template>
@@ -36,10 +50,13 @@ function cancel() {
     <h1 v-show="props.status === 'start'" @click="cancel">
       CANCEl
     </h1>
-    <h1 v-show="props.status === 'finish'">
+    <h1 v-show="props.status === 'finish'" @click="done">
       DONE
     </h1>
-    <h1 v-show="props.status === 'finish'">
+    <h1 v-show="props.status === 'break-ready'" @click="breakStart">
+      START
+    </h1>
+    <h1 v-show="props.status === 'finish'" class="mt-4" @click="takeBreak">
       TAKE A BREAK
     </h1>
   </div>

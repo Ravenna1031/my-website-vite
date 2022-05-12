@@ -25,7 +25,6 @@ import NavHeader from './components/NavHeader.vue'
 
 body {
   background-color: rgba(102, 103, 171, 0.7);
-  opacity: 1;
 }
 
 .container {
