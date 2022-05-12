@@ -31,13 +31,14 @@ const status = ref<'default' | 'ready' | 'start' | 'finish'>('default')
 const currentTheme = themeEight
 
 function iconHover() {
-  if (status.value === 'default') {
+  // hover on 'START' button
+  if (status.value === 'default')
     status.value = 'ready'
-    new Audio(currentTheme.audioReady).play()
-  }
+    // new Audio(currentTheme.audioReady).play()
 }
 
 function iconUnhover() {
+  // unhover from 'START' button
   if (status.value !== 'start')
     status.value = 'default'
 }
@@ -46,9 +47,9 @@ const theme: ITheme = themeEight
 
 let timerInterval: NodeJS.Timeout
 
-const timerMinute = ref<number>(25)
+const timerMinute = ref<number>(25) // used for counter
 const timerSecond = ref<number>(0)
-const timerMinuteDefault = ref<number>(25)
+const timerMinuteDefault = ref<number>(25) // used for calculation and default setting
 const timerSecondDefault = ref<number>(0)
 
 function timerAdd() {
@@ -66,22 +67,36 @@ function timerMinus() {
 }
 
 function timerStart() {
+  // start countdown
   status.value = 'start'
   new Audio(currentTheme.audioStart).play()
   timerCountDown()
-  timerInterval = setInterval(timerCountDown, 1000)
+  timerInterval = setInterval(timerCountDown, 100)
 }
 
 const timerValue = computed(() => {
+  // the value of countdown
   if (timerSecond.value < 10)
     return `${timerMinute.value}:0${timerSecond.value}`
   else
     return `${timerMinute.value}:${timerSecond.value}`
 })
 
+const timerToday = ref<number>(0) // total focus time today
+
+const timerTodayLocal = localStorage.getItem('timer-today') // saved in browser storage
+
+if (timerTodayLocal) {
+  if (parseInt(timerTodayLocal) !== 0)
+    timerToday.value = parseInt(timerTodayLocal)
+}
+
 function timerCountDown() {
   let seconds = timerMinute.value * 60 + timerSecond.value
   seconds -= 1
+  timerToday.value += 1
+  if (seconds <= 0)
+    timerFinish()
   timerMinute.value = Math.floor(seconds / 60)
   timerSecond.value = seconds % 60
 }
@@ -94,6 +109,20 @@ function timerCancel() {
   new Audio(currentTheme.audioCancel).play()
 }
 
+function timerFinish() {
+  status.value = 'finish'
+}
+
+function timerTodayCalculate() {
+  // calculate total focus time today
+  const oneHour = 60
+  const currentMinutes: number = Math.floor(timerToday.value / 60)
+  localStorage.setItem('timer-today', timerToday.value.toString())
+  if (currentMinutes < oneHour)
+    return currentMinutes
+  else
+    return `${Math.floor(currentMinutes / 60)}h${currentMinutes}`
+}
 </script>
 
 <template>
@@ -122,14 +151,13 @@ function timerCancel() {
         CANCEl
       </h1>
     </div>
+    <div v-show="status === 'default' || status === 'ready'" class="clock-today">
+      <h1>TODAY: {{ timerTodayCalculate() }}</h1>
+    </div>
   </div>
 </template>
 
 <style lang="less">
-.rotate {
-  animation: rotation 5s linear infinite;
-}
-
 .clock-icon {
   margin-top: 5%;
 }
@@ -153,7 +181,7 @@ function timerCancel() {
       font-size: 5vw;
     }
   }
-  #button-add,#button-minus{
+  #button-add,#button-minus {
     background-color: transparent;
     border-color: transparent;
     @media (min-width: 576px) {
@@ -176,6 +204,14 @@ function timerCancel() {
       font-size: 3vw;
     }
   }
+}
+
+.clock-today {
+  margin-top: 10%;
+}
+
+.rotate {
+  animation: rotation 5s linear infinite;
 }
 
 @keyframes rotation {
