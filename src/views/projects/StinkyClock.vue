@@ -1,21 +1,17 @@
 <script setup lang="ts">
 import { computed } from '@vue/reactivity'
 import { ref } from 'vue'
+import type { ITheme } from '../../constant'
 import eightAngry from '../../assets/image/icon/projects/StinkyClock/eight-angry.png'
 import eightJoy from '../../assets/image/icon/projects/StinkyClock/eight-joy.png'
 import eightSorrow from '../../assets/image/icon/projects/StinkyClock/eight-sorrow.png'
 import eightAudioReady from '../../assets/audio/projects/StinkyClock/eight-audio-ready.mp3'
 import eightAudioStart from '../../assets/audio/projects/StinkyClock/eight-audio-start.mp3'
 import eightAudioCancel from '../../assets/audio/projects/StinkyClock/eight-audio-cancel.mp3'
-
-interface ITheme {
-  iconDefault: string
-  iconStart: string
-  iconFinish: string
-  audioReady: string
-  audioStart: string
-  audioCancel: string
-}
+import ClockIcon from './components/StinkyClock/ClockIcon.vue'
+import ClockCounter from './components/StinkyClock/ClockCounter.vue'
+import ClockButton from './components/StinkyClock/ClockButton.vue'
+import ClockToday from './components/StinkyClock/ClockToday.vue'
 
 const themeEight: ITheme = {
   iconDefault: eightSorrow,
@@ -52,6 +48,26 @@ const timerSecond = ref<number>(0)
 const timerMinuteDefault = ref<number>(25) // used for calculation and default setting
 const timerSecondDefault = ref<number>(0)
 
+const timerToday = ref<number>(0) // total focus time today
+const timerTodayLocal = localStorage.getItem('timer-today') // saved in browser storage
+if (timerTodayLocal) {
+  if (parseInt(timerTodayLocal) !== 0)
+    timerToday.value = parseInt(timerTodayLocal)
+}
+
+const date = new Date()
+const dateToday: string = date.getFullYear().toString() + date.getMonth().toString() + date.getDate().toString()
+const dateTodayLocal = localStorage.getItem('date-today')
+if (dateTodayLocal) {
+  if (dateToday !== dateTodayLocal) { // if local date is not equal to actual date
+    timerToday.value = 0 // reset value of total focus time
+    localStorage.setItem('date-today', dateToday)
+  }
+}
+else {
+  localStorage.setItem('date-today', dateToday)
+}
+
 function timerAdd() {
   if (timerMinute.value < 60) {
     timerMinute.value += 5
@@ -66,15 +82,7 @@ function timerMinus() {
   }
 }
 
-function timerStart() {
-  // start countdown
-  status.value = 'start'
-  new Audio(currentTheme.audioStart).play()
-  timerCountDown()
-  timerInterval = setInterval(timerCountDown, 100)
-}
-
-const timerValue = computed(() => {
+const timerValue = computed<string>(() => {
   // the value of countdown
   if (timerSecond.value < 10)
     return `${timerMinute.value}:0${timerSecond.value}`
@@ -82,13 +90,12 @@ const timerValue = computed(() => {
     return `${timerMinute.value}:${timerSecond.value}`
 })
 
-const timerToday = ref<number>(0) // total focus time today
-
-const timerTodayLocal = localStorage.getItem('timer-today') // saved in browser storage
-
-if (timerTodayLocal) {
-  if (parseInt(timerTodayLocal) !== 0)
-    timerToday.value = parseInt(timerTodayLocal)
+function timerStart() {
+  // start countdown
+  status.value = 'start'
+  new Audio(currentTheme.audioStart).play()
+  timerCountDown()
+  timerInterval = setInterval(timerCountDown, 100)
 }
 
 function timerCountDown() {
@@ -111,15 +118,18 @@ function timerCancel() {
 
 function timerFinish() {
   status.value = 'finish'
+  clearInterval(timerInterval)
+  timerMinute.value = timerMinuteDefault.value
+  timerSecond.value = timerSecondDefault.value
 }
 
-function timerTodayCalculate() {
+function timerTodayCalculate(): string {
   // calculate total focus time today
   const oneHour = 60
   const currentMinutes: number = Math.floor(timerToday.value / 60)
   localStorage.setItem('timer-today', timerToday.value.toString())
   if (currentMinutes < oneHour)
-    return currentMinutes
+    return currentMinutes.toString()
   else
     return `${Math.floor(currentMinutes / 60)}h${currentMinutes}`
 }
@@ -127,100 +137,15 @@ function timerTodayCalculate() {
 
 <template>
   <div class="container">
-    <div class="clock-icon">
-      <img v-show="status === 'default'" :src="theme.iconDefault">
-      <img v-show="status === 'ready'" :src="theme.iconStart">
-      <img v-show="status === 'start'" class="rotate" :src="theme.iconStart">
-    </div>
-    <div class="clock-counter row m-0">
-      <button id="button-add" type="button" class="col-2 btn btn-light" @click="timerMinus">
-        <span v-show="status === 'default' || status === 'ready'">◀</span>
-      </button>
-      <h1 class="col-8 mb-0">
-        {{ timerValue }}
-      </h1>
-      <button id="button-minus" type="button" class="col-2 btn btn-light" @click="timerAdd">
-        <span v-show="status === 'default' || status === 'ready'">▶</span>
-      </button>
-    </div>
-    <div class="clock-button">
-      <h1 v-show="status === 'default' || status === 'ready'" @mouseover="iconHover" @mouseout="iconUnhover" @click="timerStart">
-        START
-      </h1>
-      <h1 v-show="status === 'start'" @click="timerCancel">
-        CANCEl
-      </h1>
-    </div>
-    <div v-show="status === 'default' || status === 'ready'" class="clock-today">
-      <h1>TODAY: {{ timerTodayCalculate() }}</h1>
-    </div>
+    <ClockIcon :status="status" :theme="theme" />
+    <ClockCounter :status="status" :timer-value="timerValue" @timer-add="timerAdd" @timer-minus="timerMinus" />
+    <ClockButton :status="status" @cancel="timerCancel" @start="timerStart" @hover="iconHover" @unhover="iconUnhover" />
+    <ClockToday :status="status" :timer-today="timerTodayCalculate()" />
   </div>
 </template>
 
 <style lang="less">
-.clock-icon {
-  margin-top: 5%;
-}
-
-.clock-counter {
-  display: block;
-  margin-top: 5%;
-  background: url(../../assets/image/icon/projects/StinkyClock/eight-background.png) no-repeat;
-  background-origin:border-box;
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  width: auto;
-  text-align: center;
-  h1 {
-    font-weight: 1000;
-    @media (min-width: 576px) {
-      font-size: 10vw;
-    }
-    @media (min-width: 1400px) {
-      font-size: 5vw;
-    }
-  }
-  #button-add,#button-minus {
-    background-color: transparent;
-    border-color: transparent;
-    @media (min-width: 576px) {
-      font-size: 5vw;
-    }
-    @media (min-width: 1400px) {
-      font-size: 3vw;
-    }
-  }
-}
-
-.clock-button {
-  margin-top: 15%;
-  h1 {
-    font-weight: bold;
-    @media (min-width: 576px) {
-      font-size: 5vw;
-    }
-    @media (min-width: 1400px) {
-      font-size: 3vw;
-    }
-  }
-}
-
 .clock-today {
   margin-top: 10%;
-}
-
-.rotate {
-  animation: rotation 5s linear infinite;
-}
-
-@keyframes rotation {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(359deg);
-  }
 }
 </style>
