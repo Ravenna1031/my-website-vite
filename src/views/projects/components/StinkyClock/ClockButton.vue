@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const props = defineProps<{
   status: string
+  timerMinute: number
 }>()
 
 const emit = defineEmits([
@@ -59,17 +60,18 @@ function breakStart() {
     <h1 v-show="props.status === 'break-ready'" @click="breakStart">
       START
     </h1>
-    <h1 v-show="props.status === 'reset'">
-      FOCUS
-    </h1>
+    <h2 v-show="props.status === 'reset'" @click="start">
+      FOCUS {{ timerMinute }} MINUTES
+    </h2>
   </div>
 </template>
 
 <style lang="less">
 .clock-button {
-  margin-top: 15%;
-  h1 {
+  // margin-top: 15%;
+  h1, h2 {
     font-weight: bold;
+    margin-top: 15%;
     @media (min-width: 576px) {
       font-size: 5vw;
     }

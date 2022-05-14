@@ -2,29 +2,38 @@
 import { computed } from '@vue/reactivity'
 import { ref } from 'vue'
 import type { ITheme } from '../../constant'
-import eightAngry from '../../assets/image/icon/projects/StinkyClock/eight-angry.png'
-import eightJoy from '../../assets/image/icon/projects/StinkyClock/eight-joy.png'
-import eightSorrow from '../../assets/image/icon/projects/StinkyClock/eight-sorrow.png'
-import eightBreak from '../../assets/image/icon/projects/StinkyClock/eight-break.png'
-import eightReset from '../../assets/image/icon/projects/StinkyClock/eight-reset.png'
-import eightAudioReady from '../../assets/audio/projects/StinkyClock/eight-audio-ready.mp3'
+import eightStart from '../../assets/image/projects/StinkyClock/eight-start.png'
+import eightFinish from '../../assets/image/projects/StinkyClock/eight-finish.png'
+import eightDefault from '../../assets/image/projects/StinkyClock/eight-default.png'
+import eightBreak from '../../assets/image/projects/StinkyClock/eight-break.png'
+import eightReset from '../../assets/image/projects/StinkyClock/eight-reset.png'
 import eightAudioStart from '../../assets/audio/projects/StinkyClock/eight-audio-start.mp3'
 import eightAudioCancel from '../../assets/audio/projects/StinkyClock/eight-audio-cancel.mp3'
 import eightAudioFinish from '../../assets/audio/projects/StinkyClock/eight-audio-finish.mp3'
 import eightAudioBreak from '../../assets/audio/projects/StinkyClock/eight-audio-break.mp3'
 import eightAudioReset from '../../assets/audio/projects/StinkyClock/eight-audio-reset.mp3'
+import senpaiStart from '../../assets/image/projects/StinkyClock/senpai-start.png'
+import senpaiFinish from '../../assets/image/projects/StinkyClock/senpai-finish.png'
+import senpaiDefault from '../../assets/image/projects/StinkyClock/senpai-default.png'
+import senpaiBreak from '../../assets/image/projects/StinkyClock/senpai-break.png'
+import senpaiReset from '../../assets/image/projects/StinkyClock/senpai-reset.png'
+import senpaiAudioStart from '../../assets/audio/projects/StinkyClock/senpai-audio-start.mp3'
+import senpaiAudioCancel from '../../assets/audio/projects/StinkyClock/senpai-audio-cancel.mp3'
+import senpaiAudioFinish from '../../assets/audio/projects/StinkyClock/senpai-audio-finish.mp3'
+import senpaiAudioBreak from '../../assets/audio/projects/StinkyClock/senpai-audio-break.mp3'
+import senpaiAudioReset from '../../assets/audio/projects/StinkyClock/senpai-audio-reset.mp3'
 import ClockIcon from './components/StinkyClock/ClockIcon.vue'
 import ClockCounter from './components/StinkyClock/ClockCounter.vue'
 import ClockButton from './components/StinkyClock/ClockButton.vue'
 import ClockToday from './components/StinkyClock/ClockToday.vue'
+import ClockTheme from './components/StinkyClock/ClockTheme.vue'
 
 const themeEight: ITheme = {
-  iconDefault: eightSorrow,
-  iconStart: eightAngry,
-  iconFinish: eightJoy,
+  iconDefault: eightDefault,
+  iconStart: eightStart,
+  iconFinish: eightFinish,
   iconBreak: eightBreak,
   iconReset: eightReset,
-  audioReady: eightAudioReady,
   audioStart: eightAudioStart,
   audioCancel: eightAudioCancel,
   audioFinish: eightAudioFinish,
@@ -32,15 +41,35 @@ const themeEight: ITheme = {
   audioReset: eightAudioReset,
 }
 
+const themeSenpai: ITheme = {
+  iconDefault: senpaiDefault,
+  iconStart: senpaiStart,
+  iconFinish: senpaiFinish,
+  iconBreak: senpaiBreak,
+  iconReset: senpaiReset,
+  audioStart: senpaiAudioStart,
+  audioCancel: senpaiAudioCancel,
+  audioFinish: senpaiAudioFinish,
+  audioBreak: senpaiAudioBreak,
+  audioReset: senpaiAudioReset,
+}
+
 const status = ref<'default' | 'ready' | 'start' | 'finish' | 'break-ready' | 'break' | 'reset'>('default')
 
-const currentTheme = themeEight
+const currentTheme = ref<ITheme>(themeEight)
+
+function switchTheme(themeName: string) {
+  if (themeName === 'eight')
+    currentTheme.value = themeEight
+  else if (themeName === 'senpai')
+    currentTheme.value = themeSenpai
+}
 
 function iconHover() {
   // hover on 'START' button
   if (status.value === 'default')
     status.value = 'ready'
-    // new Audio(currentTheme.audioReady).play()
+    // new Audio(currentTheme.value.audioReady).play()
 }
 
 function iconUnhover() {
@@ -49,11 +78,9 @@ function iconUnhover() {
     status.value = 'default'
 }
 
-const theme: ITheme = themeEight
-
-const timerMinute = ref<number>(1) // used for counter
+const timerMinute = ref<number>(25) // used for counter
 const timerSecond = ref<number>(0)
-const timerMinuteDefault = ref<number>(1) // used for calculation and default setting
+const timerMinuteDefault = ref<number>(25) // used for calculation and default setting
 const timerSecondDefault = ref<number>(0)
 const timerMinuteBreak = ref<number>(5) // break time countdown
 const timerSecondBreak = ref<number>(0)
@@ -81,7 +108,7 @@ else {
 }
 
 function timerAdd() {
-  if (status.value === 'break') {
+  if (status.value === 'break-ready') {
     if (timerMinuteBreak.value < 30) {
       timerMinuteBreak.value += 5
       timerMinuteBreakDefault.value = timerMinuteBreak.value
@@ -96,7 +123,7 @@ function timerAdd() {
 }
 
 function timerMinus() {
-  if (status.value === 'break') {
+  if (status.value === 'break-ready') {
     if (timerMinuteBreak.value > 5) {
       timerMinuteBreak.value -= 5
       timerMinuteBreakDefault.value = timerMinuteBreak.value
@@ -112,7 +139,7 @@ function timerMinus() {
 
 const timerValue = computed<string>(() => {
   // the value of countdown
-  if (status.value !== 'break' && status.value !== 'break-ready') {
+  if (status.value !== 'break' && status.value !== 'break-ready' && status.value !== 'reset') {
     if (timerSecond.value < 10)
       return `${timerMinute.value}:0${timerSecond.value}`
 
@@ -130,6 +157,15 @@ const timerValue = computed<string>(() => {
 
 let timerInterval: NodeJS.Timeout
 let timerIntervalBreak: NodeJS.Timeout
+let timerIntervalPositive: NodeJS.Timeout
+
+function timerPositive() {
+  let seconds = timerMinute.value * 60 + timerSecond.value
+  seconds += 1
+  timerToday.value += 1
+  timerMinute.value = Math.floor(seconds / 60)
+  timerSecond.value = seconds % 60
+}
 
 function timerCountDown() {
   let seconds = timerMinute.value * 60 + timerSecond.value
@@ -152,9 +188,9 @@ function timerCountDownBreak() {
 function timerStart() {
   // start countdown
   status.value = 'start'
-  new Audio(currentTheme.audioStart).play()
+  new Audio(currentTheme.value.audioStart).play()
   timerCountDown()
-  timerInterval = setInterval(timerCountDown, 100)
+  timerInterval = setInterval(timerCountDown, 10)
 }
 
 function timerCancel() {
@@ -162,63 +198,72 @@ function timerCancel() {
   clearInterval(timerInterval)
   timerMinute.value = timerMinuteDefault.value
   timerSecond.value = timerSecondDefault.value
-  new Audio(currentTheme.audioCancel).play()
+  new Audio(currentTheme.value.audioCancel).play()
 }
 
 function timerFinish() {
   status.value = 'finish'
   clearInterval(timerInterval)
-  new Audio(currentTheme.audioFinish).play()
+  new Audio(currentTheme.value.audioFinish).play()
+  // if countdown finished, start positive timing
+  timerPositive()
+  timerIntervalPositive = setInterval(timerPositive, 10)
 }
 
 function timerFinishBreak() {
   status.value = 'reset'
   clearInterval(timerIntervalBreak)
-  new Audio(currentTheme.audioReset).play()
+  new Audio(currentTheme.value.audioReset).play()
 }
 
 function timerDone() {
   status.value = 'default'
   timerMinute.value = timerMinuteDefault.value
   timerSecond.value = timerSecondDefault.value
+  if (timerIntervalPositive)
+    clearInterval(timerIntervalPositive)
 }
 
 function timerBreak() {
   status.value = 'break-ready'
   timerMinuteBreak.value = timerMinuteBreakDefault.value
   timerSecondBreak.value = timerSecondBreakDefault.value
+  if (timerIntervalPositive)
+    clearInterval(timerIntervalPositive)
 }
 
 function timerBreakStart() {
   status.value = 'break'
-  new Audio(currentTheme.audioBreak).play()
+  new Audio(currentTheme.value.audioBreak).play()
   timerCountDownBreak()
-  timerIntervalBreak = setInterval(timerCountDownBreak, 100)
+  timerIntervalBreak = setInterval(timerCountDownBreak, 10)
 }
 
-function timerTodayCalculate(): string {
-  // calculate total focus time today
-  const oneHour = 60
+const timerTodayCal = computed<string>(() => {
   const currentMinutes: number = Math.floor(timerToday.value / 60)
   localStorage.setItem('timer-today', timerToday.value.toString())
-  if (currentMinutes < oneHour)
+  if (currentMinutes < 60)
     return currentMinutes.toString()
   else
-    return `${Math.floor(currentMinutes / 60)}h${currentMinutes}`
-}
+    return `${Math.floor(currentMinutes / 60)}h${currentMinutes % 60}`
+})
 </script>
 
 <template>
   <div class="container">
-    <ClockIcon :status="status" :theme="theme" />
+    <h1 class="clock-title">
+      Stinky Clock
+    </h1>
+    <ClockIcon :status="status" :theme="currentTheme" />
     <ClockCounter :status="status" :timer-value="timerValue" @timer-add="timerAdd" @timer-minus="timerMinus" />
-    <ClockButton :status="status" @break-start="timerBreakStart" @take-break="timerBreak" @done="timerDone" @cancel="timerCancel" @start="timerStart" @hover="iconHover" @unhover="iconUnhover" />
-    <ClockToday :status="status" :timer-today="timerTodayCalculate()" />
+    <ClockButton :timer-minute="timerMinuteDefault" :status="status" @break-start="timerBreakStart" @take-break="timerBreak" @done="timerDone" @cancel="timerCancel" @start="timerStart" @hover="iconHover" @unhover="iconUnhover" />
+    <ClockToday :status="status" :timer-today="timerTodayCal" />
+    <ClockTheme :status="status" @theme-switch="switchTheme" />
   </div>
 </template>
 
 <style lang="less">
-.clock-today {
+.clock-title {
   margin-top: 10%;
 }
 </style>

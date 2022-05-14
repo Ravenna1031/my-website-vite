@@ -8,7 +8,6 @@ export interface ITheme {
   iconFinish: string
   iconBreak: string
   iconReset: string
-  audioReady: string
   audioStart: string
   audioCancel: string
   audioFinish: string

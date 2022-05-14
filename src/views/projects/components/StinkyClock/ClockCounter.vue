@@ -8,8 +8,6 @@ const props = defineProps<{
 const emit = defineEmits([
   'timer-add',
   'timer-minus',
-  // 'timer-add-break',
-  // 'timer-minus-break',
 ])
 
 function timerAdd() {
@@ -24,23 +22,23 @@ function timerMinus() {
 
 <template>
   <div class="clock-counter row m-0">
-    <button id="button-add" :disabled="props.status === 'start'" type="button" class="col-2 btn btn-light" @click="timerMinus">
-      <span v-show="props.status === 'default' || props.status === 'ready'">◀</span>
+    <button id="button-add" :disabled="props.status === 'start' || props.status === 'break'" type="button" class="col-2 btn btn-light" @click="timerMinus">
+      <span v-show="props.status === 'default' || props.status === 'ready' || props.status === 'break-ready'">◀</span>
     </button>
     <h1 class="col-8 mb-0">
       {{ props.timerValue }}
     </h1>
-    <button id="button-minus" :disabled="props.status === 'start'" type="button" class="col-2 btn btn-light" @click="timerAdd">
-      <span v-show="props.status === 'default' || props.status === 'ready'">▶</span>
+    <button id="button-minus" :disabled="props.status === 'start' || props.status === 'break'" type="button" class="col-2 btn btn-light" @click="timerAdd">
+      <span v-show="props.status === 'default' || props.status === 'ready' || props.status === 'break-ready'">▶</span>
     </button>
   </div>
 </template>
 
 <style lang="less">
-.clock-counter {
+.clock-counter{
   display: block;
   margin-top: 5%;
-  background: url(../../../../assets/image/icon/projects/StinkyClock/eight-background.png) no-repeat;
+  background: url(../../../../assets/image/projects/StinkyClock/eight-background.png) no-repeat;
   background-origin:border-box;
   background-clip: text;
   -webkit-background-clip: text;
