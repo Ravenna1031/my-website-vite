@@ -6,10 +6,13 @@ import eightAngry from '../../assets/image/icon/projects/StinkyClock/eight-angry
 import eightJoy from '../../assets/image/icon/projects/StinkyClock/eight-joy.png'
 import eightSorrow from '../../assets/image/icon/projects/StinkyClock/eight-sorrow.png'
 import eightBreak from '../../assets/image/icon/projects/StinkyClock/eight-break.png'
+import eightReset from '../../assets/image/icon/projects/StinkyClock/eight-reset.png'
 import eightAudioReady from '../../assets/audio/projects/StinkyClock/eight-audio-ready.mp3'
 import eightAudioStart from '../../assets/audio/projects/StinkyClock/eight-audio-start.mp3'
 import eightAudioCancel from '../../assets/audio/projects/StinkyClock/eight-audio-cancel.mp3'
 import eightAudioFinish from '../../assets/audio/projects/StinkyClock/eight-audio-finish.mp3'
+import eightAudioBreak from '../../assets/audio/projects/StinkyClock/eight-audio-break.mp3'
+import eightAudioReset from '../../assets/audio/projects/StinkyClock/eight-audio-reset.mp3'
 import ClockIcon from './components/StinkyClock/ClockIcon.vue'
 import ClockCounter from './components/StinkyClock/ClockCounter.vue'
 import ClockButton from './components/StinkyClock/ClockButton.vue'
@@ -20,13 +23,16 @@ const themeEight: ITheme = {
   iconStart: eightAngry,
   iconFinish: eightJoy,
   iconBreak: eightBreak,
+  iconReset: eightReset,
   audioReady: eightAudioReady,
   audioStart: eightAudioStart,
   audioCancel: eightAudioCancel,
   audioFinish: eightAudioFinish,
+  audioBreak: eightAudioBreak,
+  audioReset: eightAudioReset,
 }
 
-const status = ref<'default' | 'ready' | 'start' | 'finish' | 'break-ready' | 'break' | 'restart'>('default')
+const status = ref<'default' | 'ready' | 'start' | 'finish' | 'break-ready' | 'break' | 'reset'>('default')
 
 const currentTheme = themeEight
 
@@ -106,22 +112,24 @@ function timerMinus() {
 
 const timerValue = computed<string>(() => {
   // the value of countdown
-  if (timerSecond.value < 10)
-    return `${timerMinute.value}:0${timerSecond.value}`
-  else
-    return `${timerMinute.value}:${timerSecond.value}`
+  if (status.value !== 'break' && status.value !== 'break-ready') {
+    if (timerSecond.value < 10)
+      return `${timerMinute.value}:0${timerSecond.value}`
+
+    else
+      return `${timerMinute.value}:${timerSecond.value}`
+  }
+  else {
+    if (timerSecondBreak.value < 10)
+      return `${timerMinuteBreak.value}:0${timerSecondBreak.value}`
+
+    else
+      return `${timerMinuteBreak.value}:${timerSecondBreak.value}`
+  }
 })
 
 let timerInterval: NodeJS.Timeout
 let timerIntervalBreak: NodeJS.Timeout
-
-function timerStart() {
-  // start countdown
-  status.value = 'start'
-  new Audio(currentTheme.audioStart).play()
-  timerCountDown()
-  timerInterval = setInterval(timerCountDown, 100)
-}
 
 function timerCountDown() {
   let seconds = timerMinute.value * 60 + timerSecond.value
@@ -136,10 +144,17 @@ function timerCountDown() {
 function timerCountDownBreak() {
   let seconds = timerMinuteBreak.value * 60 + timerSecondBreak.value
   seconds -= 1
-  if (seconds)
+  if (seconds <= 0)
     timerFinishBreak()
   timerMinuteBreak.value = Math.floor(seconds / 60)
   timerSecondBreak.value = seconds % 60
+}
+function timerStart() {
+  // start countdown
+  status.value = 'start'
+  new Audio(currentTheme.audioStart).play()
+  timerCountDown()
+  timerInterval = setInterval(timerCountDown, 100)
 }
 
 function timerCancel() {
@@ -157,8 +172,9 @@ function timerFinish() {
 }
 
 function timerFinishBreak() {
-  status.value = 'restart'
-  clearInterval()
+  status.value = 'reset'
+  clearInterval(timerIntervalBreak)
+  new Audio(currentTheme.audioReset).play()
 }
 
 function timerDone() {
@@ -169,10 +185,13 @@ function timerDone() {
 
 function timerBreak() {
   status.value = 'break-ready'
+  timerMinuteBreak.value = timerMinuteBreakDefault.value
+  timerSecondBreak.value = timerSecondBreakDefault.value
 }
 
 function timerBreakStart() {
   status.value = 'break'
+  new Audio(currentTheme.audioBreak).play()
   timerCountDownBreak()
   timerIntervalBreak = setInterval(timerCountDownBreak, 100)
 }

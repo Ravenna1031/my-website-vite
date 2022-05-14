@@ -47,17 +47,20 @@ function breakStart() {
     <h1 v-show="props.status === 'default' || props.status === 'ready'" @mouseover="hover" @mouseout="unhover" @click="start">
       START
     </h1>
-    <h1 v-show="props.status === 'start'" @click="cancel">
+    <h1 v-show="props.status === 'start' || props.status === 'break'" @click="cancel">
       CANCEl
     </h1>
-    <h1 v-show="props.status === 'finish'" @click="done">
+    <h1 v-show="props.status === 'finish' || props.status === 'reset'" @click="done">
       DONE
+    </h1>
+    <h1 v-show="props.status === 'finish'" class="mt-4" @click="takeBreak">
+      TAKE A BREAK
     </h1>
     <h1 v-show="props.status === 'break-ready'" @click="breakStart">
       START
     </h1>
-    <h1 v-show="props.status === 'finish'" class="mt-4" @click="takeBreak">
-      TAKE A BREAK
+    <h1 v-show="props.status === 'reset'">
+      FOCUS
     </h1>
   </div>
 </template>
