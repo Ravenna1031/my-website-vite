@@ -57,8 +57,10 @@ const themeSenpai: ITheme = {
 const status = ref<'default' | 'ready' | 'start' | 'finish' | 'break-ready' | 'break' | 'reset'>('default')
 
 const currentTheme = ref<ITheme>(themeEight)
+const currentThemeName = ref('eight')
 
 function switchTheme(themeName: string) {
+  currentThemeName.value = themeName
   if (themeName === 'eight')
     currentTheme.value = themeEight
   else if (themeName === 'senpai')
@@ -190,7 +192,7 @@ function timerStart() {
   status.value = 'start'
   new Audio(currentTheme.value.audioStart).play()
   timerCountDown()
-  timerInterval = setInterval(timerCountDown, 10)
+  timerInterval = setInterval(timerCountDown, 1000)
 }
 
 function timerCancel() {
@@ -207,7 +209,7 @@ function timerFinish() {
   new Audio(currentTheme.value.audioFinish).play()
   // if countdown finished, start positive timing
   timerPositive()
-  timerIntervalPositive = setInterval(timerPositive, 10)
+  timerIntervalPositive = setInterval(timerPositive, 1000)
 }
 
 function timerFinishBreak() {
@@ -236,7 +238,7 @@ function timerBreakStart() {
   status.value = 'break'
   new Audio(currentTheme.value.audioBreak).play()
   timerCountDownBreak()
-  timerIntervalBreak = setInterval(timerCountDownBreak, 10)
+  timerIntervalBreak = setInterval(timerCountDownBreak, 1000)
 }
 
 const timerTodayCal = computed<string>(() => {
@@ -255,7 +257,7 @@ const timerTodayCal = computed<string>(() => {
       Stinky Clock
     </h1>
     <ClockIcon :status="status" :theme="currentTheme" />
-    <ClockCounter :status="status" :timer-value="timerValue" @timer-add="timerAdd" @timer-minus="timerMinus" />
+    <ClockCounter :theme-name="currentThemeName" :status="status" :timer-value="timerValue" @timer-add="timerAdd" @timer-minus="timerMinus" />
     <ClockButton :timer-minute="timerMinuteDefault" :status="status" @break-start="timerBreakStart" @take-break="timerBreak" @done="timerDone" @cancel="timerCancel" @start="timerStart" @hover="iconHover" @unhover="iconUnhover" />
     <ClockToday :status="status" :timer-today="timerTodayCal" />
     <ClockTheme :status="status" @theme-switch="switchTheme" />
