@@ -1,140 +1,125 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import * as _ from 'lodash'
+import { onMounted, reactive, ref } from 'vue'
+import { useRafFn, useWindowSize } from '@vueuse/core'
+import type { Fn } from '@vueuse/core'
 
-const canvasRef = ref<HTMLCanvasElement>()
-let ctx: CanvasRenderingContext2D
+const r180 = Math.PI
+const r90 = Math.PI / 2
+const r15 = Math.PI / 12
 
-const WIDTH = window.innerWidth
-const HEIGHT = window.innerHeight
+const el = ref<HTMLCanvasElement | null>(null)
 
-interface IPoint {
-  x: number
-  y: number
+const { random } = Math
+const size = reactive(useWindowSize())
+
+// the min number of steps
+const init = ref(4)
+// the initial length of a line
+const len = ref(6)
+
+function initCanvas(canvas: HTMLCanvasElement, width = 400, height = 400) {
+  const ctx: CanvasRenderingContext2D = canvas.getContext('2d')!
+  // webkitBackingStorePixelRatio is deprecated
+  canvas.width = width * window.devicePixelRatio
+  canvas.height = height * window.devicePixelRatio
+  canvas.style.width = `${width}px`
+  canvas.style.height = `${height}px`
+  return ctx
 }
 
-interface IBranch {
-  // single stroke
-  start: IPoint
-  length: number
-  angle: number
-}
-
-function initTree(): IBranch[] {
-  const treeResult: IBranch[] = []
-  const positionShuffle = _.shuffle(['top', 'bottom', 'left', 'right'])
-  const treeNumber = Math.ceil(Math.random() * 4)
-  const tree: IBranch = {
-    start: { x: 0, y: 0 },
-    length: 0,
-    angle: 0,
-  }
-  for (let i = 0; i < treeNumber; i++) {
-    const position = positionShuffle.shift()!
-    if (position === 'top' || position === 'bottom') {
-      tree.start.x = Math.random() * WIDTH
-      tree.length = HEIGHT / 100
-      tree.start.y = position === 'top' ? 0 : HEIGHT
-      tree.angle = position === 'top' ? Math.PI / 4 + Math.random() * Math.PI / 2 : -Math.PI / 4 - Math.random() * Math.PI / 2
-    }
-    else {
-      tree.start.y = Math.random() * WIDTH
-      tree.length = WIDTH / 100
-      tree.start.x = position === 'left' ? 0 : HEIGHT
-      tree.angle = position === 'left' ? Math.PI / 4 - Math.random() * Math.PI / 2 : Math.PI * 3 / 4 + Math.random() * Math.PI / 2
-    }
-    treeResult.push(tree)
-  }
-  return treeResult
-}
-
-function init() {
-  const seeds = initTree()
-  seeds.forEach((seed) => {
-    setTimeout(() => sprout({
-      start: seed.start,
-      length: seed.length,
-      angle: seed.angle,
-    }), 10)
-  })
-}
-
-const pendingTask: Function[] = []
-
-function sprout(b: IBranch, depth = 0) {
-  const end = getEndPoint(b)
-  drawBranch(b)
-
-  if (depth < 6 || Math.random() < 0.4) {
-    pendingTask.push(() => {
-      sprout({
-        start: end,
-        length: (Math.random() + 0.5) * b.length,
-        angle: b.angle - 0.5 * Math.random(),
-      }, depth + 1)
-    })
-  }
-
-  if (depth < 6 || Math.random() < 0.4) {
-    pendingTask.push(() => {
-      sprout({
-        start: end,
-        length: (Math.random() + 0.5) * b.length,
-        angle: b.angle + 0.5 * Math.random(),
-      }, depth + 1)
-    })
-  }
-}
-
-function frame() {
-  const task = [...pendingTask]
-  pendingTask.length = 0
-  task.forEach(fn => fn())
-}
-
-let frameCount = 0
-function startFrame() {
-  requestAnimationFrame(() => {
-    frameCount += 1
-    if (frameCount % 30 === 0)
-      frame()
-    startFrame()
-  })
-}
-
-startFrame()
-
-function lineTo(startPoint: IPoint, endPoint: IPoint) {
-  ctx.beginPath()
-  ctx.moveTo(startPoint.x, startPoint.y)
-  ctx.lineTo(endPoint.x, endPoint.y)
-  ctx.stroke()
-}
-
-function getEndPoint(b: IBranch) {
-  return {
-    x: b.start.x + b.length * Math.cos(b.angle),
-    y: b.start.y + b.length * Math.sin(b.angle),
-  }
-}
-
-function drawBranch(b: IBranch) {
-  lineTo(b.start, getEndPoint(b))
+function polar2cart(x = 0, y = 0, r = 0, theta = 0) {
+  // transfer polar coordinate (r, θ) to Cartesian coordinate (x, y)
+  const dx = r * Math.cos(theta)
+  const dy = r * Math.sin(theta)
+  return [x + dx, y + dy]
 }
 
 onMounted(() => {
-  if (canvasRef.value) { // type guard
-    ctx = canvasRef.value.getContext('2d')!
-    ctx.globalAlpha = 0.5 // transparency
-    ctx.strokeStyle = '#91B493'
+  const canvas = el.value!
+  const ctx = initCanvas(canvas, size.width, size.height)
+  const { width, height } = canvas
+
+  let steps: Fn[] = []
+  let prevSteps: Fn[] = []
+
+  let iterations = 0
+
+  const step = (x: number, y: number, rad: number) => {
+    const length = random() * len.value
+    const [nx, ny] = polar2cart(x, y, length, rad)
+    ctx.beginPath()
+    ctx.moveTo(x, y)
+    ctx.lineTo(nx, ny)
+    ctx.stroke()
+
+    // radius of generated left & right branch
+    const radL = rad - random() * r15
+    const radR = rad + random() * r15
+    // in case the point (nx, ny) is outside the canvas
+    if (nx < -100 || nx > size.width + 100 || ny < -100 || ny > size.height + 100)
+      return
+
+    if (iterations <= init.value || random() > 0.5)
+      steps.push(() => step(nx, ny, radL))
+    if (iterations <= init.value || random() > 0.5)
+      steps.push(() => step(nx, ny, radR))
   }
-  init()
+
+  // current timestamp
+  let lastTime = performance.now()
+  const interval = 1000 / 40
+
+  const frame = () => {
+    // this function is called every fame, set a time interval
+    if (performance.now() - lastTime < interval)
+      return
+
+    iterations += 1
+    // the steps should be drawn in current frame
+    prevSteps = steps
+    // clear the frames that are already been drawn
+    steps = []
+    lastTime = performance.now()
+
+    prevSteps.forEach(i => i())
+  }
+
+  // call function frame() on every requestAnimationFrame
+  const controls = useRafFn(frame, { immediate: false })
+
+  function start() {
+    controls.pause()
+    iterations = 0
+    ctx.clearRect(0, 0, width, height)
+    ctx.lineWidth = 1
+    ctx.globalAlpha = 0.5
+    ctx.strokeStyle = '#91B493'
+    prevSteps = []
+    // initial points of 4 sides
+    steps = [
+      // top
+      () => step(random() * size.width, 0, r90),
+      // bottom
+      () => step(random() * size.width, size.height, -r90),
+      // left
+      () => step(0, random() * size.height, 0),
+      // right
+      () => step(size.width, random() * size.height, r180),
+    ]
+    if (size.width < 500)
+    // if the width of the browser is to small, only keeps the top and the bottom
+      steps = steps.slice(0, 2)
+    controls.resume()
+  }
+
+  start()
 })
 
 </script>
+
 <template>
   <teleport to="#canvas">
-    <canvas ref="canvasRef" :width="WIDTH" :height="HEIGHT" />
+    <canvas ref="el" width="400" height="400" />
   </teleport>
 </template>
 
